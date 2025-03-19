@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Talking Character</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 500px;
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .character {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin-bottom: 30px;
+    }
+    
+    .body {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    
+    .eyes {
+      position: absolute;
+      top: 50px;
+      font-size: 30px;
+      font-weight: bold;
+    }
+    
+    .mouth {
+      position: absolute;
+      top: 95px;
+      width: 30px;
+      height: 5px;
+      background-color: black;
+      border-radius: 10px;
+      transition: height 0.1s ease;
+    }
+    
+    .mouth.partial {
+      height: 15px;
+    }
+    
+    .mouth.wide {
+      height: 25px;
+    }
+    
+    .accessory {
+      position: absolute;
+      top: 10px;
+      font-size: 40px;
+    }
+    
+    .controls {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    textarea {
+      width: 100%;
+      height: 80px;
+      padding: 10px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    #speakBtn {
+      background-color: #4285f4;
+    }
+    
+    #speakBtn:hover:not(:disabled) {
+      background-color: #3367d6;
+    }
+    
+    #randomBtn {
+      background-color: #9c27b0;
+    }
+    
+    #randomBtn:hover {
+      background-color: #7b1fa2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="character">
+      <div id="body" class="body">
+        <div id="eyes" class="eyes">●●</div>
+        <div id="mouth" class="mouth"></div>
+        <div id="accessory" class="accessory"></div>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <textarea id="textInput" placeholder="Type something for the character to say...">Hello! Type something for me to say.</textarea>
+      <div class="buttons">
+        <button id="speakBtn">Speak</button>
+        <button id="randomBtn">Random Character</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Character options
+    const bodyColors = [
+      "#4285f4", // blue
+      "#34a853", // green
+      "#9c27b0", // purple
+      "#ff9800", // orange
+      "#e91e63"  // pink
+    ];
+    
+    const eyeStyles = [
+      "●●",
+      "◉◉",
+      "○○",
+      "⊙⊙",
+      "◑◑"
+    ];
+    
+    // DOM elements
+    const bodyElement = document.getElementById('body');
+    const eyesElement = document.getElementById('eyes');
+    const mouthElement = document.getElementById('mouth');
+    const accessoryElement = document.getElementById('accessoryImage');
+    const textInput = document.getElementById('textInput');
+    const speakButton = document.getElementById('speakBtn');
+    const randomButton = document.getElementById('randomBtn');
+    
+    // State variables
+    let speaking = false;
+    let currentCharIndex = 0;
+    let speakInterval;
+    
+    // Generate random character
+    function randomizeCharacter() {
+      const randomBody = bodyColors[Math.floor(Math.random() * bodyColors.length)];
+      const randomEyes = eyeStyles[Math.floor(Math.random() * eyeStyles.length)];
+      
+      bodyElement.style.backgroundColor = randomBody;
+      eyesElement.textContent = randomEyes;
+    }
+    
+    // Start speaking
+    function speak() {
+      if (speaking) return;
+      
+      const text = textInput.value;
+      if (!text) return;
+      
+      speaking = true;
+      currentCharIndex = 0;
+      speakButton.disabled = true;
+      speakButton.textContent = "Speaking...";
+      
+      // Create a new SpeechSynthesisUtterance
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Set up event listeners for when speaking starts and ends
+      utterance.onstart = () => {
+        speakButton.textContent = "Speaking...";
+      };
+      utterance.onend = () => {
+        stopSpeaking();
+      };
+      
+      // Speak the text
+      window.speechSynthesis.speak(utterance);
+      
+      // Animate the mouth while speaking
+      speakInterval = setInterval(() => {
+        if (currentCharIndex >= text.length) {
+          stopSpeaking();
+          return;
+        }
+        
+        const currentChar = text[currentCharIndex].toLowerCase();
+        animateMouth(currentChar);
+        currentCharIndex++;
+      }, 100);
+    }
+    
+    // Stop speaking
+    function stopSpeaking() {
+      clearInterval(speakInterval);
+      speaking = false;
+      mouthElement.className = "mouth";
+      speakButton.disabled = false;
+      speakButton.textContent = "Speak";
+    }
+    
+    // Animate mouth based on character
+    function animateMouth(char) {
+      const vowels = ['a', 'e', 'i', 'o', 'u'];
+      
+      if (vowels.includes(char)) {
+        // Wide open for vowels
+        mouthElement.className = "mouth wide";
+      } else if (char && char !== ' ' && char.match(/[a-z]/i)) {
+        // Partially open for consonants
+        mouthElement.className = "mouth partial";
+      } else {
+        // Closed for spaces and punctuation
+        mouthElement.className = "mouth";
+      }
+    }
+    
+    // Event listeners
+    speakButton.addEventListener('click', speak);
+    randomButton.addEventListener('click', randomizeCharacter);
+    
+    // Initialize with random character
+    randomizeCharacter();
+  </script>
+</body>
+</html>

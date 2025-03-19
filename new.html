@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brainrot Video Creator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f5ff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #6a1b9a;
+      padding: 10px 20px;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      z-index: 1000;
+    }
+    
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      margin: 0 10px;
+      transition: color 0.3s;
+    }
+    
+    .navbar a:hover {
+      color: #f3e5f5;
+    }
+    
+    .container {
+      margin-top: 60px; /* Add margin to avoid overlap with fixed navbar */
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    
+    h1 {
+      color: #6a1b9a;
+    }
+    
+    p {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    
+    .upload-area {
+      border: 2px dashed #6a1b9a;
+      border-radius: 5px;
+      padding: 40px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+    
+    .upload-area:hover {
+      background-color: #f3e5f5;
+    }
+    
+    .button {
+      background-color: #6a1b9a;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .button:hover {
+      background-color: #4a148c;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">RaenaAI</div>
+    <div class="nav-links">
+      <a href="#">Features</a>
+      <a href="#">Pricing</a>
+      <a href="#">Blog</a>
+      <a href="#">Affiliation</a>
+      <a href="#">Brainrot</a>
+    </div>
+    <button class="button">Get Started</button>
+  </div>
+  <div class="container">
+    <h1>Turn your notes into Brainrot</h1>
+    <p>Transform your PDF documents and text files into engaging, easy-to-digest short-form videos using AI.</p>
+    <div class="upload-area">
+      <p>Drag and drop your files here or click to upload</p>
+    </div>
+    <button class="button">Create Free Account</button>
+  </div>
+</body>
+</html> 
