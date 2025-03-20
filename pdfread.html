@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extract Content & Save as JSON</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <link rel="stylesheet" href="client.js">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #output {
+            width: 80%;
+            margin: 20px auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            min-height: 100px;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 15px;
+            cursor: pointer;
+            border: none;
+            background: blue;
+            color: white;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Upload a PDF or Word Document</h2>
+    <input type="file" id="fileInput" accept=".pdf,.doc,.docx">
+    <button onclick="extractText()">Extract Text</button>
+    <button onclick="downloadJSON()" id="downloadBtn" style="display:none;">Download JSON</button>
+
+    <h3>Extracted Content:</h3>
+    <div id="output"></div>
+
+    <script>
+        let extractedText = "";
+
+        async function extractText() {
+            const fileInput = document.getElementById('fileInput');
+            const output = document.getElementById('output');
+            const downloadBtn = document.getElementById('downloadBtn');
+            output.textContent = "Extracting content...";
+            extractedText = "";
+
+            if (!fileInput.files.length) {
+                output.textContent = "Please select a file.";
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            if (file.type === "application/pdf") {
+                reader.onload = function () {
+                    const pdfData = new Uint8Array(this.result);
+                    pdfjsLib.getDocument({ data: pdfData }).promise.then(pdf => {
+                        let text = "";
+                        let promises = [];
+
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            promises.push(pdf.getPage(i).then(page => {
+                                return page.getTextContent().then(content => {
+                                    text += content.items.map(item => item.str).join(" ") + "\n";
+                                });
+                            }));
+                        }
+
+                        Promise.all(promises).then(() => {
+                            extractedText = text;
+
+                            output.textContent = text;
+                            downloadBtn.style.display = "inline-block"; // Show download button
+                        });
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+
+            } else if (file.name.endsWith(".doc") || file.name.endsWith(".docx")) {
+                reader.onload = function () {
+                    mammoth.extractRawText({ arrayBuffer: this.result })
+                        .then(result => {
+                            extractedText = result.value;
+                            output.textContent = extractedText;
+                            saveData(extractedText)
+                            console.log(extractedText);
+
+
+                            downloadBtn.style.display = "inline-block"; // Show download button
+                        })
+                        .catch(err => output.textContent = "Error reading Word file: " + err);
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                output.textContent = "Unsupported file format. Please upload a PDF or Word document.";
+            }
+        }
+
+
+        async function saveData(extractedText) {
+            const response = await fetch("http://localhost:3000/save", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: extractedText })
+            });
+            // Handle the response if needed
+        }
+
+        function downloadJSON() {
+            if (!extractedText) return;
+
+            const fileName = document.getElementById('fileInput').files[0].name;
+            const textArray = extractedText.split('\n'); // Convert text to an array
+            const jsonData = {
+                fileName: fileName,
+                content: textArray
+            };
+
+            fetch("http://localhost:3000/save", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(jsonData)
+            })
+                .then(response => response.json())
+                .then(data => console.log('Success:', data))
+                .catch(error => console.error('Error:', error));
+        }
+
+        function sendJSON() {
+
+        }
+    </script>
+
+</body>
+
+</html>
